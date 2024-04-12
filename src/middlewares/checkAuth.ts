@@ -19,6 +19,8 @@ async function checkAuth(c: Context, next: Next) {
       },
     });
 
+    c.set("userId", user.id);
+
     await next();
   } catch (error) {
     if (error instanceof JsonWebTokenError) {

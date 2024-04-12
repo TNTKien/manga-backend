@@ -4,14 +4,11 @@ import { setCookie, getCookie } from "hono/cookie";
 import { verifyToken, decodeToken, generateToken } from "@/utils/jwt";
 import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import { Prisma, type User } from "@prisma/client";
-
-type TRefreshResponse = {
-  message: string;
-};
+import { TResponse } from "@/types/response";
 
 async function refresh(
   c: Context
-): Promise<Response & TypedResponse<TRefreshResponse>> {
+): Promise<Response & TypedResponse<TResponse>> {
   const refreshToken = getCookie(c, "refreshToken");
   const authToken = getCookie(c, "authToken");
 
@@ -21,7 +18,6 @@ async function refresh(
 
   try {
     const decoded = decodeToken(authToken) as User & JwtPayload;
-    //console.log(decoded);
 
     const user = await prisma.user.findFirstOrThrow({
       where: {

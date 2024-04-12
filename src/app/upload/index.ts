@@ -1,8 +1,9 @@
 import { Hono } from "hono";
-import upload from "./controller";
+import { mangaUpload, uploadChapter } from "./controller";
 import checkAuth from "@/middlewares/checkAuth";
 const app = new Hono();
 
-app.post("/", checkAuth, upload);
+app.post("/", checkAuth, mangaUpload);
+app.post("/chapter", checkAuth, uploadChapter);
 
 export default app;

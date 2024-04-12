@@ -1,10 +1,7 @@
 import type { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
 import { hashPassword } from "@/utils/hashPassword";
-
-type TRegisterResponse = {
-  message: string;
-};
+import { TResponse } from "@/types/response";
 
 type TRegisterBody = {
   email: string;
@@ -14,7 +11,7 @@ type TRegisterBody = {
 
 async function register(
   c: Context
-): Promise<Response & TypedResponse<TRegisterResponse>> {
+): Promise<Response & TypedResponse<TResponse>> {
   try {
     const { email, password, username } = (await c.req.json()) as TRegisterBody;
 

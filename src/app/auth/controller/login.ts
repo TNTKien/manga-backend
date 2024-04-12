@@ -4,17 +4,14 @@ import type { User } from "@prisma/client";
 import { generateToken, generateRefreshToken } from "@/utils/jwt";
 import { setCookie } from "hono/cookie";
 import { checkPassword } from "@/utils/hashPassword";
-
-type TLoginResponse = {
-  message: string;
-};
+import { TResponse } from "@/types/response";
 
 type TLoginBody = {
   email: string;
   password: string;
 };
 
-type TLoginSuccess = TLoginResponse & {
+type TLoginSuccess = TResponse & {
   authToken: string;
   refreshToken: string;
 };
@@ -26,7 +23,7 @@ type Token = {
 
 async function login(
   c: Context
-): Promise<Response & TypedResponse<TLoginResponse | TLoginSuccess>> {
+): Promise<Response & TypedResponse<TResponse | TLoginSuccess>> {
   try {
     const { email, password } = (await c.req.json()) as TLoginBody;
 
@@ -61,7 +58,7 @@ async function login(
     setCookie(c, "authToken", token.authToken, {
       httpOnly: true,
       path: "/",
-      maxAge: 0 * 60 * 24 * 30,
+      maxAge: 60 * 60 * 24 * 30,
     });
 
     return c.json(
