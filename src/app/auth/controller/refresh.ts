@@ -4,7 +4,7 @@ import { setCookie, getCookie } from "hono/cookie";
 import { verifyToken, decodeToken, generateToken } from "@/utils/jwt";
 import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import { Prisma, type User } from "@prisma/client";
-//TODO: Invalid token error
+
 type TRefreshResponse = {
   message: string;
 };
@@ -49,7 +49,7 @@ async function refresh(
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return c.json({ message: "User not found" }, 404);
     }
-
+    console.log(error);
     return c.json({ message: "An error occurred" }, 500);
   }
 }

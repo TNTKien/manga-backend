@@ -1,6 +1,6 @@
 import type { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
-import { hash } from "bcrypt";
+import { hashPassword } from "@/utils/hashPassword";
 
 type TRegisterResponse = {
   message: string;
@@ -63,12 +63,6 @@ async function isExistingUser(
   } catch (error) {
     return false;
   }
-}
-
-async function hashPassword(password: string): Promise<string> {
-  return hash(password, 12).catch((error) => {
-    return error;
-  });
 }
 
 export { register };

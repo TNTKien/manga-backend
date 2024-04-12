@@ -7,6 +7,8 @@ function app(context: Hono) {
   context.route("/health", status);
   context.route("/auth", auth);
   context.route("/upload", upload);
+
+  return context;
 }
 
 export default app;

@@ -1,9 +1,9 @@
 import type { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
-import { compare } from "bcrypt";
 import type { User } from "@prisma/client";
 import { generateToken, generateRefreshToken } from "@/utils/jwt";
 import { setCookie } from "hono/cookie";
+import { checkPassword } from "@/utils/hashPassword";
 
 type TLoginResponse = {
   message: string;
@@ -61,7 +61,7 @@ async function login(
     setCookie(c, "authToken", token.authToken, {
       httpOnly: true,
       path: "/",
-      maxAge: 60 * 30,
+      maxAge: 0 * 60 * 24 * 30,
     });
 
     return c.json(
@@ -89,13 +89,6 @@ async function getUser(email: string): Promise<User | null> {
     return null;
   }
   return user;
-}
-
-async function checkPassword(
-  password: string,
-  hashedPassword: string
-): Promise<boolean> {
-  return compare(password, hashedPassword);
 }
 
 function generate(user: Pick<User, "id" | "role" | "username">): Token {

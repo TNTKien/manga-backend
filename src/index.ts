@@ -3,6 +3,7 @@ import routes from "@/routes";
 import { serveStatic } from "hono/bun";
 
 let app = new Hono();
+
 app.use(
   "/*",
   serveStatic({
@@ -11,8 +12,6 @@ app.use(
   })
 );
 
-app = app.basePath("/api");
-
-routes(app);
+app = routes(app.basePath("/api"));
 
 export default app;
