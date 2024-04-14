@@ -33,7 +33,9 @@ function mangaUploadSchema() {
     cover: zfd.file(
       z
         .instanceof(File)
-        .refine((file) => file.size < 2 * 1024 * 1024)
+        .refine((file) => file.size < 2 * 1024 * 1024, {
+          message: "File size must be less than 2MB",
+        })
         .refine((file) => file.type.startsWith("image"))
     ),
     title: z.string().min(5).max(255),
@@ -52,7 +54,9 @@ function mangaUpdateSchema() {
       .file(
         z
           .instanceof(File)
-          .refine((file) => file.size < 2 * 1024 * 1024)
+          .refine((file) => file.size < 2 * 1024 * 1024, {
+            message: "File size must be less than 2MB",
+          })
           .refine((file) => file.type.startsWith("image"))
       )
       .or(z.string()),

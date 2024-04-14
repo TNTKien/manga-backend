@@ -2,6 +2,7 @@ import prisma from "@/services/prisma";
 import { TDataResponse } from "@/types/response";
 import { uploadMangaCover, mangaUploadSchema } from "@/services/manga";
 import { THonoContext } from "@/types/hono";
+import { ZodError } from "zod";
 
 const schema = mangaUploadSchema();
 
@@ -51,6 +52,9 @@ async function uploadManga(
     );
   } catch (error) {
     console.error(error);
+    if (error instanceof ZodError) {
+      return c.json({ message: error.message, data: null }, 400);
+    }
     return c.json({ message: "An error occurred", data: null }, 500);
   }
 }

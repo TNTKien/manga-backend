@@ -20,7 +20,9 @@ function chapterUploadSchema() {
         zfd.file(
           z
             .instanceof(File)
-            .refine((file) => file.size < MAX_IMAGE_SIZE)
+            .refine((file) => file.size < MAX_IMAGE_SIZE, {
+              message: "File size must be less than 5MB",
+            })
             .refine((file) => file.type.startsWith("image"))
         )
       )
@@ -38,7 +40,9 @@ function chapterUpdateSchema() {
           .file(
             z
               .instanceof(File)
-              .refine((file) => file.size < MAX_IMAGE_SIZE)
+              .refine((file) => file.size < MAX_IMAGE_SIZE, {
+                message: "File size must be less than 5MB",
+              })
               .refine((file) => file.type.startsWith("image"))
           )
           .or(z.string())

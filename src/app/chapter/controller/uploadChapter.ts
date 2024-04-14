@@ -5,6 +5,7 @@ import { TDataResponse } from "@/types/response";
 import { isMangaOwner } from "@/services/manga";
 import { THonoContext } from "@/types/hono";
 import { chapterUploadSchema, uploadChapterPage } from "@/services/chapter";
+import { ZodError } from "zod";
 
 const schema = chapterUploadSchema();
 
@@ -55,6 +56,9 @@ async function uploadChapter(
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return c.json({ message: "Manga not found", data: null }, 404);
+    }
+    if (error instanceof ZodError) {
+      return c.json({ message: error.message, data: null }, 400);
     }
     return c.json({ message: "An error occurred", data: null }, 500);
   }

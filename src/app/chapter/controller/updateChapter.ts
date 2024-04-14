@@ -5,6 +5,7 @@ import { isMangaOwner } from "@/services/manga";
 import { copyFileSync, renameSync, mkdirSync, rmSync } from "fs";
 import { THonoContext } from "@/types/hono";
 import { chapterUpdateSchema, uploadChapterPage } from "@/services/chapter";
+import { ZodError } from "zod";
 
 const schema = chapterUpdateSchema();
 const rootDir = process.cwd();
@@ -54,6 +55,9 @@ async function updateChapter(c: THonoContext): TDataResponse {
     console.error(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return c.json({ message: "Chapter not found", data: null }, 404);
+    }
+    if (error instanceof ZodError) {
+      return c.json({ message: error.message, data: null }, 400);
     }
     return c.json({ message: "An error occurred", data: null }, 500);
   }
