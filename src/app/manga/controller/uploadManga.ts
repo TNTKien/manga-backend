@@ -1,10 +1,10 @@
 import { zfd } from "zod-form-data";
 import { z } from "zod";
-import { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
 import { Tags } from "@prisma/client";
-import { TResponse } from "@/types/response";
+import { TDataResponse } from "@/types/response";
 import { uploadMangaCover } from "@/services/manga";
+import { THonoContext } from "@/types/hono";
 
 const schema = zfd.formData({
   cover: zfd.file(
@@ -20,13 +20,9 @@ const schema = zfd.formData({
   status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "CANCELLED"]),
 });
 
-type TMangaSuccess = TResponse & {
-  mangaId: string;
-};
-
-async function mangaUpload(
-  c: Context
-): Promise<Response & TypedResponse<TMangaSuccess | TResponse>> {
+async function uploadManga(
+  c: THonoContext
+): TDataResponse<{ mangaId: string }> {
   try {
     const { cover, title, description, author, tags, status } = schema.parse(
       await c.req.formData()
@@ -55,13 +51,18 @@ async function mangaUpload(
     });
 
     return c.json(
-      { message: "Manga uploaded successfully", mangaId: newManga.id },
+      {
+        message: "Manga uploaded successfully",
+        data: {
+          mangaId: newManga.id,
+        },
+      },
       201
     );
   } catch (error) {
     console.error(error);
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 
-export { mangaUpload };
+export { uploadManga };

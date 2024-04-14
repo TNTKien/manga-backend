@@ -1,19 +1,13 @@
-import { Manga, Prisma } from "@prisma/client";
+import { Manga } from "@prisma/client";
 import prisma from "@/services/prisma";
-import { TResponse } from "@/types/response";
-import { Context, TypedResponse } from "hono";
+import { TDataResponse } from "@/types/response";
+import { THonoContext } from "@/types/hono";
 
-type TMangaSuccess = TResponse & {
-  data: Manga;
-};
-
-async function getSpecificManga(
-  c: Context
-): Promise<Response & TypedResponse<TMangaSuccess | TResponse>> {
+async function getSpecificManga(c: THonoContext): TDataResponse<Manga> {
   try {
     const mangaId = c.req.param("id");
 
-    const manga = await prisma.manga.findUnique({
+    const manga = await prisma.manga.findUniqueOrThrow({
       where: {
         id: mangaId,
       },
@@ -21,7 +15,7 @@ async function getSpecificManga(
     return c.json({ message: "Manga fetched successfully", data: manga }, 200);
   } catch (error) {
     console.error(error);
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 

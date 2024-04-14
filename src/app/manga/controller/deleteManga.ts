@@ -1,18 +1,19 @@
 import prisma from "@/services/prisma";
-import { TResponse } from "@/types/response";
-import { Context, TypedResponse } from "hono";
+import { TDataResponse } from "@/types/response";
 import { isMangaOwner } from "@/services/manga";
 import { rmSync } from "fs";
+import { THonoContext } from "@/types/hono";
 
-async function deleteManga(
-  c: Context
-): Promise<Response & TypedResponse<TResponse>> {
+async function deleteManga(c: THonoContext): TDataResponse {
   try {
     const mangaId = c.req.param("id");
     const userId = c.get("userId") as string;
 
     if (!(await isMangaOwner(userId, mangaId))) {
-      return c.json({ message: "You are not the owner of this manga" }, 403);
+      return c.json(
+        { message: "You are not the owner of this manga", data: null },
+        403
+      );
     }
     const manga = await prisma.manga.findFirstOrThrow({
       where: {
@@ -48,10 +49,10 @@ async function deleteManga(
     });
     rmSync(rootDir + manga.cover, { force: true });
 
-    return c.json({ message: "Manga deleted successfully" }, 200);
+    return c.json({ message: "Manga deleted successfully", data: null }, 204);
   } catch (error) {
     console.error(error);
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 

@@ -1,7 +1,7 @@
-import type { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
 import { hashPassword } from "@/utils/hashPassword";
-import { TResponse } from "@/types/response";
+import { TDataResponse } from "@/types/response";
+import { THonoContext } from "@/types/hono";
 
 type TRegisterBody = {
   email: string;
@@ -9,18 +9,16 @@ type TRegisterBody = {
   username: string;
 };
 
-async function register(
-  c: Context
-): Promise<Response & TypedResponse<TResponse>> {
+async function register(c: THonoContext): TDataResponse {
   try {
     const { email, password, username } = (await c.req.json()) as TRegisterBody;
 
     if (!email || !password || !username) {
-      return c.json({ message: "Missing required fields" }, 400);
+      return c.json({ message: "Missing required fields", data: null }, 400);
     }
 
     if (await isExistingUser(email, username)) {
-      return c.json({ message: "User already exists" }, 400);
+      return c.json({ message: "User already exists", data: null }, 400);
     }
 
     const hashedPassword = await hashPassword(password);
@@ -33,9 +31,9 @@ async function register(
       },
     });
 
-    return c.json({ message: "User created successfully" }, 201);
+    return c.json({ message: "User created successfully", data: null }, 201);
   } catch (error) {
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 

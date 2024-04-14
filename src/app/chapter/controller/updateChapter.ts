@@ -1,11 +1,11 @@
 import { zfd } from "zod-form-data";
 import { z } from "zod";
-import { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
 import { Prisma } from "@prisma/client";
-import { TResponse } from "@/types/response";
+import { TDataResponse } from "@/types/response";
 import { isMangaOwner } from "@/services/manga";
 import { writeFileSync, copyFileSync, renameSync, mkdirSync, rmSync } from "fs";
+import { THonoContext } from "@/types/hono";
 
 const schema = zfd.formData({
   title: z.string().min(5).max(255),
@@ -24,9 +24,7 @@ const schema = zfd.formData({
   mangaId: z.string(),
 });
 
-async function updateChapter(
-  c: Context
-): Promise<TypedResponse<TResponse> & Response> {
+async function updateChapter(c: THonoContext): TDataResponse {
   try {
     const { title, pages, mangaId } = schema.parse(await c.req.formData());
 
@@ -34,7 +32,10 @@ async function updateChapter(
     const isOwner = await isMangaOwner(userId, mangaId);
 
     if (!isOwner) {
-      return c.json({ message: "You are not the owner of this manga" }, 403);
+      return c.json(
+        { message: "You are not the owner of this manga", data: null },
+        403
+      );
     }
 
     const chapterId = c.req.param("chapterId");
@@ -80,12 +81,12 @@ async function updateChapter(
         pages: newChapterPages,
       },
     });
-    return c.json({ message: "Chapter updated successfully" }, 200);
+    return c.json({ message: "Chapter updated successfully", data: null }, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return c.json({ message: "Chapter not found" }, 404);
+      return c.json({ message: "Chapter not found", data: null }, 404);
     }
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 export { updateChapter };

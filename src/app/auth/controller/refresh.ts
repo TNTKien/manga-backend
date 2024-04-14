@@ -1,19 +1,17 @@
-import type { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
 import { setCookie, getCookie } from "hono/cookie";
 import { verifyToken, decodeToken, generateToken } from "@/utils/jwt";
 import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import { Prisma, type User } from "@prisma/client";
-import { TResponse } from "@/types/response";
+import { TDataResponse } from "@/types/response";
+import { THonoContext } from "@/types/hono";
 
-async function refresh(
-  c: Context
-): Promise<Response & TypedResponse<TResponse>> {
+async function refresh(c: THonoContext): TDataResponse<{ authToken: string }> {
   const refreshToken = getCookie(c, "refreshToken");
   const authToken = getCookie(c, "authToken");
 
   if (!refreshToken || !authToken) {
-    return c.json({ message: "Invalid token" }, 400);
+    return c.json({ message: "Invalid token", data: null }, 400);
   }
 
   try {
@@ -34,19 +32,22 @@ async function refresh(
         path: "/",
         maxAge: 60 * 30,
       });
-      return c.json({ message: "Token refreshed", authToken: newToken }, 200);
+      return c.json(
+        { message: "Token refreshed", data: { authToken: newToken } },
+        200
+      );
     }
-    return c.json({ message: "Invalid token" }, 400);
+    return c.json({ message: "Invalid token", data: null }, 400);
   } catch (error) {
     if (error instanceof JsonWebTokenError) {
-      return c.json({ message: "Invalid token" }, 400);
+      return c.json({ message: "Invalid token", data: null }, 400);
     }
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return c.json({ message: "User not found" }, 404);
+      return c.json({ message: "User not found", data: null }, 404);
     }
     console.log(error);
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 

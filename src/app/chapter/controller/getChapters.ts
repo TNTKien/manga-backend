@@ -1,15 +1,9 @@
 import { Chapter, Prisma } from "@prisma/client";
 import prisma from "@/services/prisma";
-import { TResponse } from "@/types/response";
-import { Context, TypedResponse } from "hono";
+import { TDataResponse } from "@/types/response";
+import { THonoContext } from "@/types/hono";
 
-type TChapterSuccess = TResponse & {
-  data: Chapter[];
-};
-
-async function getChapters(
-  c: Context
-): Promise<Response & TypedResponse<TChapterSuccess | TResponse>> {
+async function getChapters(c: THonoContext): TDataResponse<any> {
   try {
     const mangaId = c.req.param("id");
 
@@ -27,7 +21,7 @@ async function getChapters(
     );
   } catch (error) {
     console.error(error);
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 

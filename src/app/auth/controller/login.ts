@@ -1,19 +1,14 @@
-import type { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
 import type { User } from "@prisma/client";
 import { generateToken, generateRefreshToken } from "@/utils/jwt";
 import { setCookie } from "hono/cookie";
 import { checkPassword } from "@/utils/hashPassword";
-import { TResponse } from "@/types/response";
+import { TDataResponse } from "@/types/response";
+import { THonoContext } from "@/types/hono";
 
 type TLoginBody = {
   email: string;
   password: string;
-};
-
-type TLoginSuccess = TResponse & {
-  authToken: string;
-  refreshToken: string;
 };
 
 type Token = {
@@ -21,23 +16,20 @@ type Token = {
   refreshToken: string;
 };
 
-async function login(
-  c: Context
-): Promise<Response & TypedResponse<TResponse | TLoginSuccess>> {
+async function login(c: THonoContext): TDataResponse<Token> {
   try {
     const { email, password } = (await c.req.json()) as TLoginBody;
 
     if (!email || !password) {
-      return c.json({ message: "Missing required fields" }, 400);
+      return c.json({ message: "Missing required fields", data: null }, 400);
     }
-
     const user = await getUser(email);
     if (!user) {
-      return c.json({ message: "Invalid credentials" }, 400);
+      return c.json({ message: "Invalid credentials", data: null }, 400);
     }
 
     if (!(await checkPassword(password, user.password))) {
-      return c.json({ message: "Invalid credentials" }, 400);
+      return c.json({ message: "Invalid credentials", data: null }, 400);
     }
 
     const token = generate(user);
@@ -64,14 +56,16 @@ async function login(
     return c.json(
       {
         message: "Login successful",
-        authToken: token.authToken,
-        refreshToken: token.refreshToken,
+        data: {
+          authToken: token.authToken,
+          refreshToken: token.refreshToken,
+        },
       },
       200
     );
   } catch (error) {
     console.error(error);
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 

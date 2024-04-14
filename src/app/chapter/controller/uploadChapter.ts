@@ -1,15 +1,11 @@
-import { Context, TypedResponse } from "hono";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import prisma from "@/services/prisma";
 import { mkdirSync, writeFileSync } from "fs";
 import { Prisma } from "@prisma/client";
-import { TResponse } from "@/types/response";
+import { TDataResponse } from "@/types/response";
 import { isMangaOwner } from "@/services/manga";
-
-type TChapterSuccess = TResponse & {
-  chapterId: string;
-};
+import { THonoContext } from "@/types/hono";
 
 const schema = zfd.formData({
   title: z.string().min(5).max(255),
@@ -23,21 +19,25 @@ const schema = zfd.formData({
       )
     )
   ),
-  mangaId: z.string(),
 });
 
 async function uploadChapter(
-  c: Context
-): Promise<Response & TypedResponse<TChapterSuccess | TResponse>> {
+  c: THonoContext
+): TDataResponse<{ chapterId: string }> {
   try {
-    const { title, pages, mangaId } = schema.parse(await c.req.formData());
+    const mangaId = c.req.param("mangaId");
+    const userId = c.get("userId");
 
-    const userId = c.get("userId") as string;
     const isOwner = await isMangaOwner(userId, mangaId);
 
     if (!isOwner) {
-      return c.json({ message: "You are not the owner of this manga" }, 403);
+      return c.json(
+        { message: "You are not the owner of this manga", data: null },
+        403
+      );
     }
+
+    const { title, pages } = schema.parse(await c.req.formData());
 
     const newChapter = await prisma.chapter.create({
       data: {
@@ -57,14 +57,19 @@ async function uploadChapter(
       },
     });
     return c.json(
-      { message: "Chapter uploaded successfully", chapterId: newChapter.id },
+      {
+        message: "Chapter uploaded successfully",
+        data: {
+          chapterId: newChapter.id,
+        },
+      },
       201
     );
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return c.json({ message: "Manga not found" }, 404);
+      return c.json({ message: "Manga not found", data: null }, 404);
     }
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 

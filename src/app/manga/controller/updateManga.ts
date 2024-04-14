@@ -1,10 +1,10 @@
 import { zfd } from "zod-form-data";
 import { z } from "zod";
-import { Context, TypedResponse } from "hono";
 import prisma from "@/services/prisma";
 import { Tags, Prisma } from "@prisma/client";
-import { TResponse } from "@/types/response";
 import { isMangaOwner, uploadMangaCover } from "@/services/manga";
+import { THonoContext } from "@/types/hono";
+import { TDataResponse } from "@/types/response";
 
 const schema = zfd.formData({
   cover: zfd
@@ -22,9 +22,7 @@ const schema = zfd.formData({
   status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "CANCELLED"]),
 });
 
-async function mangaUpdate(
-  c: Context
-): Promise<TypedResponse<TResponse> & Response> {
+async function mangaUpdate(c: THonoContext): TDataResponse {
   try {
     const { cover, title, description, author, tags, status } = schema.parse(
       await c.req.formData()
@@ -34,7 +32,10 @@ async function mangaUpdate(
 
     const isOwner = await isMangaOwner(userId, mangaId);
     if (!isOwner) {
-      return c.json({ message: "You are not the owner of this manga" }, 403);
+      return c.json(
+        { message: "You are not the owner of this manga", data: null },
+        403
+      );
     }
 
     let updatedCover: string;
@@ -56,12 +57,12 @@ async function mangaUpdate(
         author: author,
       },
     });
-    return c.json({ message: "Manga updated successfully" }, 200);
+    return c.json({ message: "Manga updated successfully", data: null }, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return c.json({ message: "An error occurred" }, 400);
+      return c.json({ message: "An error occurred", data: null }, 400);
     }
-    return c.json({ message: "An error occurred" }, 500);
+    return c.json({ message: "An error occurred", data: null }, 500);
   }
 }
 
