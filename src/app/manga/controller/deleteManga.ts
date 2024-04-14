@@ -3,11 +3,14 @@ import { TDataResponse } from "@/types/response";
 import { isMangaOwner } from "@/services/manga";
 import { rmSync } from "fs";
 import { THonoContext } from "@/types/hono";
+import { deleteChapterPages } from "@/services/chapter";
+
+const rootDir = process.cwd();
 
 async function deleteManga(c: THonoContext): TDataResponse {
   try {
     const mangaId = c.req.param("id");
-    const userId = c.get("userId") as string;
+    const userId = c.get("userId");
 
     if (!(await isMangaOwner(userId, mangaId))) {
       return c.json(
@@ -15,38 +18,33 @@ async function deleteManga(c: THonoContext): TDataResponse {
         403
       );
     }
-    const manga = await prisma.manga.findFirstOrThrow({
-      where: {
-        id: mangaId,
-      },
-    });
+    const [manga, chapters] = await prisma.$transaction([
+      prisma.manga.findFirstOrThrow({
+        where: {
+          id: mangaId,
+        },
+      }),
+      prisma.chapter.findMany({
+        where: {
+          mangaId: mangaId,
+        },
+      }),
+    ]);
 
-    const chapters = await prisma.chapter.findMany({
-      where: {
-        mangaId: mangaId,
-      },
-    });
+    await prisma.$transaction([
+      prisma.chapter.deleteMany({
+        where: {
+          mangaId: mangaId,
+        },
+      }),
+      prisma.manga.delete({
+        where: {
+          id: mangaId,
+        },
+      }),
+    ]);
 
-    await prisma.chapter.deleteMany({
-      where: {
-        mangaId: mangaId,
-      },
-    });
-
-    await prisma.manga.delete({
-      where: {
-        id: mangaId,
-      },
-    });
-
-    const rootDir = process.cwd();
-
-    chapters.forEach(async (chapter) => {
-      rmSync(`${rootDir}/static/images/chapter/${chapter.id}/`, {
-        recursive: true,
-        force: true,
-      });
-    });
+    chapters.forEach(async (chapter) => deleteChapterPages(chapter.id));
     rmSync(rootDir + manga.cover, { force: true });
 
     return c.json({ message: "Manga deleted successfully", data: null }, 204);

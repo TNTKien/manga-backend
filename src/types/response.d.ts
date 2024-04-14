@@ -4,9 +4,13 @@ export type TBodyResponse = {
   message: string;
 };
 
-export type SerializedData<T> = {
-  [k in keyof T]: T[k] extends Date ? string : T[k];
-};
+export type SerializedData<T> = T extends (infer U)[]
+  ? {
+      [k in keyof U]: U[k] extends Date ? string : U[k];
+    }[]
+  : {
+      [k in keyof T]: T[k] extends Date ? string : T[k];
+    };
 
 export type TBaseRespone<T extends TBodyResponse> = Response & TypedResponse<T>;
 

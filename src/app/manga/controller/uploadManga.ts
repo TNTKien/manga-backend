@@ -1,24 +1,9 @@
-import { zfd } from "zod-form-data";
-import { z } from "zod";
 import prisma from "@/services/prisma";
-import { Tags } from "@prisma/client";
 import { TDataResponse } from "@/types/response";
-import { uploadMangaCover } from "@/services/manga";
+import { uploadMangaCover, mangaUploadSchema } from "@/services/manga";
 import { THonoContext } from "@/types/hono";
 
-const schema = zfd.formData({
-  cover: zfd.file(
-    z
-      .instanceof(File)
-      .refine((file) => file.size < 2 * 1024 * 1024)
-      .refine((file) => file.type.startsWith("image"))
-  ),
-  title: z.string().min(5).max(255),
-  description: z.string().min(5).max(2048),
-  author: zfd.repeatable(z.array(z.string().min(2).max(128))),
-  tags: zfd.repeatable(z.array(z.nativeEnum(Tags))),
-  status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "CANCELLED"]),
-});
+const schema = mangaUploadSchema();
 
 async function uploadManga(
   c: THonoContext
@@ -27,8 +12,7 @@ async function uploadManga(
     const { cover, title, description, author, tags, status } = schema.parse(
       await c.req.formData()
     );
-    // console.log(data);
-    const userId = c.get("userId") as string;
+    const userId = c.get("userId");
     const newManga = await prisma.manga.create({
       data: {
         cover: "",

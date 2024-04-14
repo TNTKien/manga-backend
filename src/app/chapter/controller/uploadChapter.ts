@@ -1,25 +1,12 @@
-import { z } from "zod";
-import { zfd } from "zod-form-data";
 import prisma from "@/services/prisma";
 import { mkdirSync, writeFileSync } from "fs";
 import { Prisma } from "@prisma/client";
 import { TDataResponse } from "@/types/response";
 import { isMangaOwner } from "@/services/manga";
 import { THonoContext } from "@/types/hono";
+import { chapterUploadSchema, uploadChapterPage } from "@/services/chapter";
 
-const schema = zfd.formData({
-  title: z.string().min(5).max(255),
-  pages: zfd.repeatable(
-    z.array(
-      zfd.file(
-        z
-          .instanceof(File)
-          .refine((file) => file.size < 2 * 1024 * 1024)
-          .refine((file) => file.type.startsWith("image"))
-      )
-    )
-  ),
-});
+const schema = chapterUploadSchema();
 
 async function uploadChapter(
   c: THonoContext
@@ -81,14 +68,7 @@ async function uploadChapterPages(
   mkdirSync(`${rootDir}/static/images/chapter/${chapterId}`);
   let chapterPages = [];
   for (let i = 0; i < pages.length; i++) {
-    const img = pages[i];
-    const imgNameArr = img.name.split(".");
-    const imgExt = imgNameArr[imgNameArr.length - 1];
-    const imgPath = `${rootDir}/static/images/chapter/${chapterId}/${
-      i + 1
-    }.${imgExt}`;
-    writeFileSync(imgPath, new Uint8Array(await img.arrayBuffer()));
-    chapterPages.push(imgPath.replace(rootDir, ""));
+    chapterPages.push(await uploadChapterPage(pages[i], chapterId, i));
   }
   return chapterPages;
 }

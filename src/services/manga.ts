@@ -1,5 +1,8 @@
 import prisma from "./prisma";
 import { writeFileSync } from "fs";
+import { zfd, formData } from "zod-form-data";
+import { z } from "zod";
+import { Tags } from "@prisma/client";
 
 async function isMangaOwner(userId: string, mangaId: string): Promise<boolean> {
   try {
@@ -25,4 +28,41 @@ async function uploadMangaCover(cover: File, mangaId: string): Promise<string> {
   return imgPath.replace(rootDir, "");
 }
 
-export { isMangaOwner, uploadMangaCover };
+function mangaUploadSchema() {
+  const schema = zfd.formData({
+    cover: zfd.file(
+      z
+        .instanceof(File)
+        .refine((file) => file.size < 2 * 1024 * 1024)
+        .refine((file) => file.type.startsWith("image"))
+    ),
+    title: z.string().min(5).max(255),
+    description: z.string().min(5).max(2048),
+    author: zfd.repeatable(z.array(z.string().min(2).max(128))),
+    tags: zfd.repeatable(z.array(z.nativeEnum(Tags))),
+    status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "CANCELLED"]),
+  });
+
+  return schema;
+}
+
+function mangaUpdateSchema() {
+  const schema = zfd.formData({
+    cover: zfd
+      .file(
+        z
+          .instanceof(File)
+          .refine((file) => file.size < 2 * 1024 * 1024)
+          .refine((file) => file.type.startsWith("image"))
+      )
+      .or(z.string()),
+    title: z.string().min(5).max(255),
+    description: z.string().min(5).max(2048),
+    author: zfd.repeatable(z.array(z.string().min(2).max(128))),
+    tags: zfd.repeatable(z.array(z.nativeEnum(Tags))),
+    status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "CANCELLED"]),
+  });
+  return schema;
+}
+
+export { isMangaOwner, uploadMangaCover, mangaUpdateSchema, mangaUploadSchema };

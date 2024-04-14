@@ -1,9 +1,9 @@
-import { Chapter, Prisma } from "@prisma/client";
+import { Chapter } from "@prisma/client";
 import prisma from "@/services/prisma";
 import { TDataResponse } from "@/types/response";
 import { THonoContext } from "@/types/hono";
 
-async function getChapters(c: THonoContext): TDataResponse<any> {
+async function getChapters(c: THonoContext): TDataResponse<Chapter[]> {
   try {
     const mangaId = c.req.param("id");
 

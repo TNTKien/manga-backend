@@ -1,8 +1,9 @@
 import prisma from "@/services/prisma";
 import { TDataResponse } from "@/types/response";
 import { THonoContext } from "@/types/hono";
+import { Manga } from "@prisma/client";
 
-async function getMangas(c: THonoContext): TDataResponse<any> {
+async function getMangas(c: THonoContext): TDataResponse<Manga[]> {
   try {
     const url = new URL(c.req.url);
     const pageParam = url.searchParams.get("page") || 1;
