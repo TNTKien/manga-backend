@@ -12,9 +12,6 @@ const schema = mangaUpdateSchema();
 
 async function mangaUpdate(c: THonoContext): TDataResponse {
   try {
-    const { cover, title, description, author, tags, status } = schema.parse(
-      await c.req.formData()
-    );
     const userId = c.get("userId");
     const mangaId = c.req.param("id");
 
@@ -25,6 +22,9 @@ async function mangaUpdate(c: THonoContext): TDataResponse {
         403
       );
     }
+    const { cover, title, description, author, tags, status } = schema.parse(
+      await c.req.formData()
+    );
 
     let updatedCover: string;
     if (cover instanceof File) {

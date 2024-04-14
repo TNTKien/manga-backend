@@ -9,10 +9,16 @@ async function uploadManga(
   c: THonoContext
 ): TDataResponse<{ mangaId: string }> {
   try {
+    const userId = c.get("userId");
+
+    if (!(await isUploader(userId))) {
+      return c.json({ message: "You are not an uploader", data: null }, 403);
+    }
+
     const { cover, title, description, author, tags, status } = schema.parse(
       await c.req.formData()
     );
-    const userId = c.get("userId");
+
     const newManga = await prisma.manga.create({
       data: {
         cover: "",
@@ -47,6 +53,19 @@ async function uploadManga(
     console.error(error);
     return c.json({ message: "An error occurred", data: null }, 500);
   }
+}
+
+async function isUploader(userId: string): Promise<boolean> {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: userId,
+      role: {
+        in: ["UPLOADER", "ADMIN"],
+      },
+    },
+  });
+  if (!!user) return true;
+  return false;
 }
 
 export { uploadManga };
