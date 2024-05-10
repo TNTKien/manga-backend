@@ -7,6 +7,7 @@ import prisma from "@/services/prisma";
 
 async function checkAuth(c: Context, next: Next) {
   const authToken = getCookie(c, "authToken");
+
   if (!authToken) {
     return c.json({ message: "Unauthorized" }, 401);
   }
@@ -24,7 +25,7 @@ async function checkAuth(c: Context, next: Next) {
     await next();
   } catch (error) {
     if (error instanceof JsonWebTokenError) {
-      return c.json({ message: "Invalid token" }, 400);
+      return c.json({ message: "Invalid token" }, 401);
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return c.json({ message: "User not found" }, 404);

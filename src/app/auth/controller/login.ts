@@ -25,11 +25,11 @@ async function login(c: THonoContext): TDataResponse<Token> {
     }
     const user = await getUser(email);
     if (!user) {
-      return c.json({ message: "Invalid credentials", data: null }, 400);
+      return c.json({ message: "Invalid credentials", data: null }, 401);
     }
 
     if (!(await checkPassword(password, user.password))) {
-      return c.json({ message: "Invalid credentials", data: null }, 400);
+      return c.json({ message: "Invalid credentials", data: null }, 401);
     }
 
     const token = generate(user);
@@ -44,7 +44,7 @@ async function login(c: THonoContext): TDataResponse<Token> {
 
     setCookie(c, "refreshToken", token.refreshToken, {
       httpOnly: true,
-      path: "/api/auth/refresh",
+      path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
     setCookie(c, "authToken", token.authToken, {

@@ -18,7 +18,7 @@ async function register(c: THonoContext): TDataResponse {
     }
 
     if (await isExistingUser(email, username)) {
-      return c.json({ message: "User already exists", data: null }, 400);
+      return c.json({ message: "User already exists", data: null }, 403);
     }
 
     const hashedPassword = await hashPassword(password);

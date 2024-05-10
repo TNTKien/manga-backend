@@ -9,7 +9,7 @@ import { THonoContext } from "@/types/hono";
 async function refresh(c: THonoContext): TDataResponse<{ authToken: string }> {
   const refreshToken = getCookie(c, "refreshToken");
   const authToken = getCookie(c, "authToken");
-
+  //console.log(refreshToken, authToken);
   if (!refreshToken || !authToken) {
     return c.json({ message: "Invalid token", data: null }, 400);
   }
@@ -26,7 +26,7 @@ async function refresh(c: THonoContext): TDataResponse<{ authToken: string }> {
     verifyToken(refreshToken);
 
     if (user.refreshToken.includes(refreshToken)) {
-      const newToken = generateToken(user);
+      const newToken = generateToken({ id: user.id });
       setCookie(c, "authToken", newToken, {
         httpOnly: true,
         path: "/",
@@ -37,16 +37,16 @@ async function refresh(c: THonoContext): TDataResponse<{ authToken: string }> {
         200
       );
     }
-    return c.json({ message: "Invalid token", data: null }, 400);
+    return c.json({ message: "Invalid token 2", data: null }, 400);
   } catch (error) {
     if (error instanceof JsonWebTokenError) {
-      return c.json({ message: "Invalid token", data: null }, 400);
+      return c.json({ message: "Invalid token 3", data: null }, 400);
     }
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return c.json({ message: "User not found", data: null }, 404);
     }
-    console.log(error);
+    //console.log(error);
     return c.json({ message: "An error occurred", data: null }, 500);
   }
 }

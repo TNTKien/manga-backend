@@ -6,15 +6,21 @@ import { Manga } from "@prisma/client";
 async function searchMangas(c: THonoContext): TDataResponse<Manga[]> {
   const url = new URL(c.req.url);
 
-  const query = url.searchParams.get("query");
+  const query = url.searchParams.get("q");
+  const limit = url.searchParams.get("limit");
+  const offset = url.searchParams.get("offset");
+
   if (!query) {
     return c.json({ message: "Query is required", data: null }, 400);
   }
   try {
     const mangas = await prisma.manga.findMany({
+      take: Number(limit) || 10,
+      skip: Number(offset) || 0,
       where: {
         title: {
           contains: query,
+          mode: "insensitive",
         },
       },
     });

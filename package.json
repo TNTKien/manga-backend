@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot -p 3001 src/index.ts",
+    "predev": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.12.1",

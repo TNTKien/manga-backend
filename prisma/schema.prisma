@@ -89,6 +89,8 @@ model Chapter {
     pages     String[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    Manga     Manga?   @relation(fields: [mangaId], references: [id])
-    mangaId   String?  @db.ObjectId
+    manga     Manga    @relation(fields: [mangaId], references: [id])
+    mangaId   String   @db.ObjectId
+
+    @@index([mangaId])
 }

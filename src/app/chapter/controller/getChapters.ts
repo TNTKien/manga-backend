@@ -12,7 +12,7 @@ async function getChapters(c: THonoContext): TDataResponse<Chapter[]> {
         mangaId,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
     return c.json(
