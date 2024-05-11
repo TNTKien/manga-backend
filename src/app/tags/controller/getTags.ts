@@ -7,6 +7,12 @@ async function getTags(c: THonoContext): TDataResponse<string[]> {
   const tagsArr = Object.keys(Tags).filter(
     (value) => isNaN(Number(value)) === true
   );
+
+  //replace _ with space
+  tagsArr.forEach((tag, index) => {
+    tagsArr[index] = tag.replace(/_/g, " ");
+  });
+
   return c.json(
     {
       message: "Tags fetched successfully",

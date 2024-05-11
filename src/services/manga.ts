@@ -14,6 +14,7 @@ async function isMangaOwner(userId: string, mangaId: string): Promise<boolean> {
     });
     return true;
   } catch (error) {
+    console.error(error);
     return false;
   }
 }

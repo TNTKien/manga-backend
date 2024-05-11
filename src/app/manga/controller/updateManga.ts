@@ -23,9 +23,11 @@ async function mangaUpdate(c: THonoContext): TDataResponse {
         403
       );
     }
+    //console.log(await c.req.formData());
     const { cover, title, description, author, tags, status } = schema.parse(
       await c.req.formData()
     );
+    //console.log(cover);
 
     let updatedCover: string;
     if (cover instanceof File) {
@@ -38,7 +40,7 @@ async function mangaUpdate(c: THonoContext): TDataResponse {
         id: mangaId,
       },
       data: {
-        cover: updatedCover,
+        cover: updatedCover + `?${new Date().getTime()}`,
         title: title,
         description: description,
         tags: tags,
@@ -52,6 +54,7 @@ async function mangaUpdate(c: THonoContext): TDataResponse {
       return c.json({ message: "An error occurred", data: null }, 400);
     }
     if (error instanceof ZodError) {
+      //console.error(error);
       return c.json({ message: error.message, data: null }, 400);
     }
     return c.json({ message: "An error occurred", data: null }, 500);
