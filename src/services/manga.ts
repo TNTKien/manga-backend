@@ -34,14 +34,14 @@ function mangaUploadSchema() {
     cover: zfd.file(
       z
         .instanceof(File)
-        .refine((file) => file.size < 2 * 1024 * 1024, {
-          message: "File size must be less than 2MB",
+        .refine((file) => file.size < 5 * 1024 * 1024, {
+          message: "File size must be less than 5MB",
         })
         .refine((file) => file.type.startsWith("image"))
     ),
-    title: z.string().min(5).max(255),
-    description: z.string().min(5).max(2048),
-    author: zfd.repeatable(z.array(z.string().min(2).max(128))),
+    title: z.string().min(3).max(255),
+    description: z.string().min(3).max(2048),
+    author: zfd.repeatable(z.array(z.string().min(1).max(128))),
     tags: zfd.repeatable(z.array(z.nativeEnum(Tags))),
     status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "CANCELLED"]),
   });
@@ -55,15 +55,15 @@ function mangaUpdateSchema() {
       .file(
         z
           .instanceof(File)
-          .refine((file) => file.size < 2 * 1024 * 1024, {
-            message: "File size must be less than 2MB",
+          .refine((file) => file.size < 5 * 1024 * 1024, {
+            message: "File size must be less than 5MB",
           })
           .refine((file) => file.type.startsWith("image"))
       )
       .or(z.string()),
-    title: z.string().min(5).max(255),
-    description: z.string().min(5).max(2048),
-    author: zfd.repeatable(z.array(z.string().min(2).max(128))),
+    title: z.string().min(3).max(255),
+    description: z.string().min(3).max(2048),
+    author: zfd.repeatable(z.array(z.string().min(1).max(128))),
     tags: zfd.repeatable(z.array(z.nativeEnum(Tags))),
     status: z.enum(["ONGOING", "COMPLETED", "HIATUS", "CANCELLED"]),
   });

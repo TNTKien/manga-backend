@@ -33,7 +33,7 @@ function chapterUploadSchema() {
 
 function chapterUpdateSchema() {
   const schema = zfd.formData({
-    title: z.string().min(5).max(255),
+    title: z.string().min(3).max(255),
     pages: zfd.repeatable(
       z.array(
         zfd
