@@ -78,8 +78,6 @@ enum Tags {
     THRILLER
     TRAGEDY
     VAMPIRES
-    WEBTOONS
-    YAOI
     YURI
 }
 

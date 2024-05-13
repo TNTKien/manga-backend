@@ -21,6 +21,7 @@ async function Session(c: THonoContext) {
         id: true,
         username: true,
         email: true,
+        role: true,
       },
       where: {
         id: decoded.id,
