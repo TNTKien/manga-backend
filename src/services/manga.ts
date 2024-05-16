@@ -70,4 +70,17 @@ function mangaUpdateSchema() {
   return schema;
 }
 
-export { isMangaOwner, uploadMangaCover, mangaUpdateSchema, mangaUploadSchema };
+function mangaFollowSchema() {
+  const schema = zfd.formData({
+    mangaId: z.string(),
+  });
+  return schema;
+}
+
+export {
+  isMangaOwner,
+  uploadMangaCover,
+  mangaUpdateSchema,
+  mangaUploadSchema,
+  mangaFollowSchema,
+};
